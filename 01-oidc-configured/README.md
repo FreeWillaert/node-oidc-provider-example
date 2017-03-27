@@ -25,7 +25,7 @@ git commit -a -m 'added keystores, enabled features'
 
 4) Deploy to heroku  
 ```
-git push heroku master
+git push heroku next:master
 ```
 
 5) Done!  
