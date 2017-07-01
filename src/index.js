@@ -9,18 +9,12 @@ const serverlessHttp = require('serverless-http');
 
 const Provider = require('oidc-provider');
 
-// assert(process.env.HEROKU_APP_NAME, 'process.env.HEROKU_APP_NAME missing, run `heroku labs:enable runtime-dyno-metadata`');
-// assert(process.env.PORT, 'process.env.PORT missing');
-// assert(process.env.SECURE_KEY, 'process.env.SECURE_KEY missing, run `heroku addons:create securekey`');
-// assert.equal(process.env.SECURE_KEY.split(',').length, 2, 'process.env.SECURE_KEY format invalid');
-// assert(process.env.REDIS_URL, 'process.env.REDIS_URL missing, run `heroku-redis:hobby-dev`');
-
 // simple account model for this application, user list is defined like so
 const Account = require('./account');
 
 // const oidc = new Provider(`https://${process.env.HEROKU_APP_NAME}.herokuapp.com`, {
-// TODO: Read host from incoming event?
-const oidc = new Provider('http://localhost:3000', {
+// TODO: Read host and stage from incoming event? Use custom domain name?
+const oidc = new Provider("http://TOREPLACE", {
 
   // oidc-provider only looks up the accounts by their ID when it has to read the claims,
   // passing it our Account model method is sufficient, it should return a Promise that resolves
@@ -72,7 +66,6 @@ var expressPromise = oidc.initialize({
   keystore,
   integrity,
   clients: [
-    // reconfigured the foo client for the purpose of showing the adapter working
     {
       client_id: 'foo',
       redirect_uris: ['https://example.com'],
@@ -85,12 +78,14 @@ var expressPromise = oidc.initialize({
 
   console.error("TUUUT");
 
-  // TODO: What is proxy?
+  // TODO: What does proxy setting do??
   oidc.app.proxy = true;
 
-  // TODO: What to do about keys??
+  // TODO: What does keys setting do??
   // oidc.app.keys = process.env.SECURE_KEY.split(',');
-  oidc.app.keys = ["abc", "def"]
+  // TEMPORARILY setting fixed values here.
+  oidc.app.keys = ["BA029827D9A1806C2F28A441B62D7B44B4F6ECFC78D85CCFD3C9E2989F2677FD", "606999196AB576E99482612FA4373717222D4A6E7F08D8FC85864522302B51C"];
+
 }).then(() => {
 
   expressApp.set('trust proxy', true);
@@ -141,15 +136,15 @@ var expressPromise = oidc.initialize({
   // leave the rest of the requests to be handled by oidc-provider, there's a catch all 404 there
   expressApp.use(oidc.callback);
 
-  // express listen
-  // expressApp.listen(process.env.PORT);
-
   return expressApp;
 });
 
 
 module.exports.handler = (event, context, callback) => {
-  // TODO: distinguish based on oidc.initialized...??
+  
+  // TODO: can we still (re)set issuer here?
+  oidc.issuer = `${event.isOffline ? "http" : "https"}://${event.headers.Host}${event.isOffline ? "" : "/"+event.requestContext.stage}`;
+  console.log("oidc:" + JSON.stringify(oidc));
 
   expressPromise.then((expressApp) => {
     serverlessHttp(expressApp)(event, context, callback);
