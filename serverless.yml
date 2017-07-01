@@ -5,8 +5,10 @@ service: oidc-provider
 provider:
   name: aws
   runtime: nodejs6.10
-  stage: dev
+  memorySize: 128
+  timeout: 15 # Avoid cold start timeouts.
   region: eu-central-1 # Frankfurt
+  stage: ${opt:stage}
 
 # you can define service wide environment variables here
 #  environment:
