@@ -1,0 +1,25 @@
+# For full config options, check the docs: docs.serverless.com
+
+service: oidc-provider
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: dev
+  region: eu-central-1 # Frankfurt
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+functions:
+  main:
+    # handler: handler.hello
+    handler: src/index.handler
+
+    events:
+      - http: ANY {proxy+}
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-include-dependencies

@@ -5,21 +5,22 @@ const assert = require('assert');
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
+const serverlessHttp = require('serverless-http');
+
 const Provider = require('oidc-provider');
 
-assert(process.env.HEROKU_APP_NAME, 'process.env.HEROKU_APP_NAME missing, run `heroku labs:enable runtime-dyno-metadata`');
-assert(process.env.PORT, 'process.env.PORT missing');
-assert(process.env.SECURE_KEY, 'process.env.SECURE_KEY missing, run `heroku addons:create securekey`');
-assert.equal(process.env.SECURE_KEY.split(',').length, 2, 'process.env.SECURE_KEY format invalid');
-assert(process.env.REDIS_URL, 'process.env.REDIS_URL missing, run `heroku-redis:hobby-dev`');
-
-// require the redis adapter factory/class
-const RedisAdapter = require('./redis_adapter');
+// assert(process.env.HEROKU_APP_NAME, 'process.env.HEROKU_APP_NAME missing, run `heroku labs:enable runtime-dyno-metadata`');
+// assert(process.env.PORT, 'process.env.PORT missing');
+// assert(process.env.SECURE_KEY, 'process.env.SECURE_KEY missing, run `heroku addons:create securekey`');
+// assert.equal(process.env.SECURE_KEY.split(',').length, 2, 'process.env.SECURE_KEY format invalid');
+// assert(process.env.REDIS_URL, 'process.env.REDIS_URL missing, run `heroku-redis:hobby-dev`');
 
 // simple account model for this application, user list is defined like so
 const Account = require('./account');
 
-const oidc = new Provider(`https://${process.env.HEROKU_APP_NAME}.herokuapp.com`, {
+// const oidc = new Provider(`https://${process.env.HEROKU_APP_NAME}.herokuapp.com`, {
+// TODO: Read host from incoming event?
+const oidc = new Provider('http://localhost:3000', {
 
   // oidc-provider only looks up the accounts by their ID when it has to read the claims,
   // passing it our Account model method is sufficient, it should return a Promise that resolves
@@ -42,8 +43,9 @@ const oidc = new Provider(`https://${process.env.HEROKU_APP_NAME}.herokuapp.com`
     // this => oidc koa request context;
     return `/interaction/${this.oidc.uuid}`;
   },
-  // configure Provider to use the adapter
-  adapter: RedisAdapter,
+
+  // Note: using generic in-memory adapter
+
   features: {
     // disable the packaged interactions
     devInteractions: false,
@@ -64,7 +66,9 @@ const oidc = new Provider(`https://${process.env.HEROKU_APP_NAME}.herokuapp.com`
 const keystore = require('./keystore.json');
 const integrity = require('./integrity.json');
 
-oidc.initialize({
+const expressApp = express();
+
+var expressPromise = oidc.initialize({
   keystore,
   integrity,
   clients: [
@@ -78,11 +82,17 @@ oidc.initialize({
     },
   ],
 }).then(() => {
+
+  console.error("TUUUT");
+
+  // TODO: What is proxy?
   oidc.app.proxy = true;
-  oidc.app.keys = process.env.SECURE_KEY.split(',');
+
+  // TODO: What to do about keys??
+  // oidc.app.keys = process.env.SECURE_KEY.split(',');
+  oidc.app.keys = ["abc", "def"]
 }).then(() => {
-  // let's work with express here, below is just the interaction definition
-  const expressApp = express();
+
   expressApp.set('trust proxy', true);
   expressApp.set('view engine', 'ejs');
   expressApp.set('views', path.resolve(__dirname, 'views'));
@@ -132,5 +142,16 @@ oidc.initialize({
   expressApp.use(oidc.callback);
 
   // express listen
-  expressApp.listen(process.env.PORT);
+  // expressApp.listen(process.env.PORT);
+
+  return expressApp;
 });
+
+
+module.exports.handler = (event, context, callback) => {
+  // TODO: distinguish based on oidc.initialized...??
+
+  expressPromise.then((expressApp) => {
+    serverlessHttp(expressApp)(event, context, callback);
+  })
+}

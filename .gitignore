@@ -35,3 +35,11 @@ npm-shrinkwrap.json
 
 # TODOs
 TODO.md
+
+# SERVERLESS
+# package directories
+# node_modules # Already present above.
+jspm_packages
+
+# Serverless directories
+.serverless
