@@ -1,0 +1,11 @@
+{
+  "keys": [
+    {
+      "kty": "oct",
+      "kid": "jTFpVpSXz_qSImW8IxVMB6CfiLAtZmT_vSs2zqoZPRA",
+      "use": "sig",
+      "alg": "HS512",
+      "k": "hxm_IF-X0PerhxzbCKb4LsirO4uvir8re27kn0dNHBZlkr5QWS-6pIEyYpClUMbjL-L2DiO9cxe5L-IB72Mr6w"
+    }
+  ]
+}
