@@ -2,7 +2,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createKeyStore } = require('oidc-provider');
+// const { createKeyStore } = require('oidc-provider');
+require('util').promisify = require('util.promisify');
+const { createKeyStore } = require('oidc-provider-node65');
+
 
 const integrity = createKeyStore();
 const keystore = createKeyStore();
