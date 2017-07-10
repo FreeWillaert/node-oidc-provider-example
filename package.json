@@ -13,11 +13,15 @@
     "express-urlrewrite": "^1.2.0",
     "ioredis": "^2.5.0",
     "lodash": "^4.17.4",
+    "serverless-http": "^1.4.3",
     "util.promisify": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "^3.18.0",
     "eslint-config-airbnb-base": "^11.1.2",
-    "eslint-plugin-import": "^2.2.0"
+    "eslint-plugin-import": "^2.2.0",
+    "serverless": "^1.16.1",
+    "serverless-offline": "^3.14.2",
+    "serverless-plugin-include-dependencies": "^2.1.2"
   }
 }

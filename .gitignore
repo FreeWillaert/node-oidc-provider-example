@@ -35,3 +35,14 @@ npm-shrinkwrap.json
 
 # TODOs
 TODO.md
+
+# FOR SERVERLESS
+# package directories
+jspm_packages
+
+# Serverless directories
+.serverless
+Contact GitHub API Training Shop Blog About
+
+# Temp folder
+temp
