@@ -13,6 +13,7 @@
     "express-urlrewrite": "^1.2.0",
     "ioredis": "^2.5.0",
     "lodash": "^4.17.4",
+    "lru-cache": "^4.1.1",
     "serverless-http": "^1.4.3",
     "util.promisify": "^1.0.0"
   },

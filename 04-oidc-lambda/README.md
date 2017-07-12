@@ -15,10 +15,14 @@ yarn
 node 01-oidc-configured/generate-keys
 ```
 
-x) Copy the views and account model
+x) Copy the views
 ```
-cp 03-oidc-views-accounts/account.js src
 cp -r 03-oidc-views-accounts/views src
+```
+
+x) Copy the account model
+```
+cp 04-oidc-lambda/account.js src
 ```
 
 x) Copy the configured index, feel free to check the diff after you do  

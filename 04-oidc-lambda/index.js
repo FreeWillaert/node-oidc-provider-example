@@ -14,7 +14,7 @@ const serverlessHttp = require('serverless-http');
 
 // TODO: require the DynamoDB adapter factory/class
 // const DynamoDBAdapter = require('./dynamodb_adapter');
-const MyMemoryAdapter = require('./MyMemoryAdapter');
+// const MyMemoryAdapter = require('./MyMemoryAdapter');
 
 // simple account model for this application, user list is defined like so
 const Account = require('./account');
@@ -78,7 +78,7 @@ const expressPromise = oidc.initialize({
     },
   ],
   // configure Provider to use the adapter
-  adapter: MyMemoryAdapter
+  // adapter: MyMemoryAdapter
 }).then(() => {
   // TODO: What does proxy setting do??
   oidc.app.proxy = true;
