@@ -129,7 +129,7 @@ class DynamoDBAdapter {
         const key = this.key(id);
         return this.docClient.get({ Key: { key: key } }).promise()
             .then(getResult => {
-                    console.log("Retrieved item:", JSON.stringify(getResult, null, 2));
+                console.log("Retrieved item:", JSON.stringify(getResult, null, 2));
             })
             .catch(error => {
                 console.error("Error:" + error);
@@ -153,7 +153,7 @@ class DynamoDBAdapter {
             .then(model => {
                 model.consumed = Date.now() / 1000;
                 return putModel(key, model);
-            })
+            });
     }
 
     /**
@@ -176,7 +176,30 @@ class DynamoDBAdapter {
          *
          */
 
-        throw new Error("TODO");
+        const key = this.key(id);
+
+        return this.docClient.get({ Key: { key: key } }).promise()
+            .then(model => {
+
+                var promises = [];
+
+                if (model && model.grantId) {
+                    const grantKey = grantKeyFor(grantId);
+                    this.docClient.get({ Key: { key: grantKey } }).promise()
+                        .then(tokenKeys => {
+                            tokenKeys.forEach(tokenKey => {
+                                promises.push(this.docClient.delete({ Key: { key: tokenKey } }));
+                            })
+                        };
+                }
+
+                promises.push(this.docClient.delete({ Key: { key: key } }));
+
+                // TODO: Check FSK: shouldn't the model with key == grantKey not also be deleted??
+
+                return Promise.all(promises);
+            })
+
     }
 }
 
