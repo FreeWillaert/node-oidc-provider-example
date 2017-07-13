@@ -1,6 +1,5 @@
 'use strict';
 
-// see previous example for the things that are not commented
 const assert = require('assert');
 const path = require('path');
 const express = require('express');
@@ -12,8 +11,12 @@ const Provider = require('oidc-provider');
 // simple account model for this application, user list is defined like so
 const Account = require('./account');
 
-// const oidc = new Provider(`https://${process.env.HEROKU_APP_NAME}.herokuapp.com`, {
-// TODO: Read host and stage from incoming event? Use custom domain name?
+// require the DynamoDB adapter factory/class
+process.env.DYNAMODB_REGION = "eu-central-1"; // TODO: read this from serverless.yml region, or set it as environment variable there
+process.env.DYNAMODB_TABLE = "oidc-provider-models";
+const DynamoDBAdapter = require('./dynamodb_adapter');
+
+
 const oidc = new Provider("http://TOREPLACE", {
 
   // oidc-provider only looks up the accounts by their ID when it has to read the claims,
@@ -38,8 +41,8 @@ const oidc = new Provider("http://TOREPLACE", {
     return `/interaction/${this.oidc.uuid}`;
   },
 
-  // Note: using generic in-memory adapter
-
+  adapter: DynamoDBAdapter,
+  
   features: {
     // disable the packaged interactions
     devInteractions: false,
@@ -75,8 +78,6 @@ var expressPromise = oidc.initialize({
     },
   ],
 }).then(() => {
-
-  console.error("TUUUT");
 
   // TODO: What does proxy setting do??
   oidc.app.proxy = true;
@@ -141,9 +142,9 @@ var expressPromise = oidc.initialize({
 
 
 module.exports.handler = (event, context, callback) => {
-  
+
   // TODO: can we still (re)set issuer here?
-  oidc.issuer = `${event.isOffline ? "http" : "https"}://${event.headers.Host}${event.isOffline ? "" : "/"+event.requestContext.stage}`;
+  oidc.issuer = `${event.isOffline ? "http" : "https"}://${event.headers.Host}${event.isOffline ? "" : "/" + event.requestContext.stage}`;
   console.log("oidc:" + JSON.stringify(oidc));
 
   expressPromise.then((expressApp) => {

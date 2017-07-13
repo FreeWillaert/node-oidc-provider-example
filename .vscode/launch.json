@@ -8,7 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch test.js",
-            "program": "${workspaceRoot}/test.js"
+            "program": "${workspaceRoot}/quicktests.js"
         }
     ]
 }
