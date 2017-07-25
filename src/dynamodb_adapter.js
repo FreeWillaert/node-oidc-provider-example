@@ -1,206 +1,208 @@
-/* eslint-disable */
-'use strict';
+// // OBSOLETE
 
-const assert = require('assert');
-const AWS = require("aws-sdk");
+// /* eslint-disable */
+// 'use strict';
 
-function grantKeyFor(id) {
-    return `grant:${id}`;
-}
+// const assert = require('assert');
+// const AWS = require("aws-sdk");
 
-class DynamoDBAdapter {
+// function grantKeyFor(id) {
+//     return `grant:${id}`;
+// }
 
-    /**
-     *
-     * Creates an instance of MyAdapter for an oidc-provider model.
-     *
-     * @constructor
-     * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
-     * "AuthorizationCode", "RefreshToken", "ClientCredentials" or "Client", "InitialAccessToken",
-     * "RegistrationAccessToken"
-     *
-     */
-    constructor(name) {
-        assert(name, 'name must be provided');
-        assert(process.env.DYNAMODB_REGION, 'DYNAMODB_REGION env var must be set');
-        assert(process.env.DYNAMODB_TABLE, 'DYNAMODB_TABLE env var must be set');
+// class DynamoDBAdapter {
 
-        this.name = name;
+//     /**
+//      *
+//      * Creates an instance of MyAdapter for an oidc-provider model.
+//      *
+//      * @constructor
+//      * @param {string} name Name of the oidc-provider model. One of "Session", "AccessToken",
+//      * "AuthorizationCode", "RefreshToken", "ClientCredentials" or "Client", "InitialAccessToken",
+//      * "RegistrationAccessToken"
+//      *
+//      */
+//     constructor(name) {
+//         assert(name, 'name must be provided');
+//         assert(process.env.DYNAMODB_REGION, 'DYNAMODB_REGION env var must be set');
+//         assert(process.env.DYNAMODB_TABLE, 'DYNAMODB_TABLE env var must be set');
 
-        AWS.config.update({ region: process.env.DYNAMODB_REGION });
+//         this.name = name;
 
-        this.docClient = new AWS.DynamoDB.DocumentClient({ params: { TableName: process.env.DYNAMODB_TABLE } });
-    }
+//         AWS.config.update({ region: process.env.DYNAMODB_REGION });
 
-    key(id) {
-        return `${this.name}:${id}`;
-    }
+//         this.docClient = new AWS.DynamoDB.DocumentClient({ params: { TableName: process.env.DYNAMODB_TABLE } });
+//     }
 
-    putModel(key, payload, expiresIn) {
-        const item = Object.assign({ key: key }, payload);
+//     key(id) {
+//         return `${this.name}:${id}`;
+//     }
 
-        if (expiresIn) {
-            item.expiration = (Date.now() / 1000) + expiresIn;
-        }
+//     putModel(key, payload, expiresIn) {
+//         const item = Object.assign({ key: key }, payload);
 
-        return this.docClient.put({ TableName: this.table, Item: item }).promise()
-            .then(putResult => {
-                console.log("Added item:", JSON.stringify(putResult, null, 2));
-            });
-    }
+//         if (expiresIn) {
+//             item.expiration = (Date.now() / 1000) + expiresIn;
+//         }
 
-    /**
-     *
-     * Update or Create an instance of an oidc-provider model.
-     *
-     * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
-     * encountered.
-     * @param {string} id Identifier that oidc-provider will use to reference this model instance for
-     * future operations.
-     * @param {object} payload Object with all properties intended for storage.
-     * @param {expiresIn} integer Number of seconds intended for this model to be stored.
-     *
-     */
-    upsert(id, payload, expiresIn) {
+//         return this.docClient.put({ TableName: this.table, Item: item }).promise()
+//             .then(putResult => {
+//                 console.log("Added item:", JSON.stringify(putResult, null, 2));
+//             });
+//     }
 
-        /**
-         *
-         * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials,
-         * InitialAccessToken or RegistrationAccessToken the payload will contain the following
-         * properties:
-         * - grantId {string} the original id assigned to a grant (authorization request)
-         * - header {string} oidc-provider tokens are themselves JWTs, this is the header part of the token
-         * - payload {string} second part of the token
-         * - signature {string} the signature of the token
-         *
-         * Hint: you can JSON.parse(base64decode( ... )) the header and payload to get the token
-         * properties and store them too, they may be helpful for getting insights on your usage.
-         * Modifying any of header, payload or signature values will result in the token being invalid,
-         * remember that oidc-provider will do a JWT signature check of both the received and stored
-         * token to detect potential manipulation.
-         *
-         * Hint2: in order to fulfill all OAuth2.0 behaviors in regards to invalidating and expiring
-         * potentially misused or sniffed tokens you should keep track of all tokens that belong to the
-         * same grantId.
-         *
-         * Client model will only use this when registered through Dynamic Registration features.
-         *
-         * Session model payload contains the following properties:
-         * - account {string} the session account identifier
-         * - authorizations {object} object with session authorized clients and their session identifiers
-         * - loginTs {number} timestamp of user's authentication
-         *
-         */
+//     /**
+//      *
+//      * Update or Create an instance of an oidc-provider model.
+//      *
+//      * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
+//      * encountered.
+//      * @param {string} id Identifier that oidc-provider will use to reference this model instance for
+//      * future operations.
+//      * @param {object} payload Object with all properties intended for storage.
+//      * @param {expiresIn} integer Number of seconds intended for this model to be stored.
+//      *
+//      */
+//     upsert(id, payload, expiresIn) {
 
-        const key = this.key(id);
+//         /**
+//          *
+//          * When this is one of AccessToken, AuthorizationCode, RefreshToken, ClientCredentials,
+//          * InitialAccessToken or RegistrationAccessToken the payload will contain the following
+//          * properties:
+//          * - grantId {string} the original id assigned to a grant (authorization request)
+//          * - header {string} oidc-provider tokens are themselves JWTs, this is the header part of the token
+//          * - payload {string} second part of the token
+//          * - signature {string} the signature of the token
+//          *
+//          * Hint: you can JSON.parse(base64decode( ... )) the header and payload to get the token
+//          * properties and store them too, they may be helpful for getting insights on your usage.
+//          * Modifying any of header, payload or signature values will result in the token being invalid,
+//          * remember that oidc-provider will do a JWT signature check of both the received and stored
+//          * token to detect potential manipulation.
+//          *
+//          * Hint2: in order to fulfill all OAuth2.0 behaviors in regards to invalidating and expiring
+//          * potentially misused or sniffed tokens you should keep track of all tokens that belong to the
+//          * same grantId.
+//          *
+//          * Client model will only use this when registered through Dynamic Registration features.
+//          *
+//          * Session model payload contains the following properties:
+//          * - account {string} the session account identifier
+//          * - authorizations {object} object with session authorized clients and their session identifiers
+//          * - loginTs {number} timestamp of user's authentication
+//          *
+//          */
 
-        const promises = [];
+//         const key = this.key(id);
 
-        const grantId = payload.grantId;
-        if (grantId) {
-            const grantKey = grantKeyFor(grantId);
-            const handleGrantPromise = this.docClient.get({ Key: { key: grantKey } }).promise()
-                .then(grant => {
-                    if (!grant) {
-                        return putModel(grantKey, [key]);
-                    } else {
-                        grant.push(key);
-                        return putModel(grantKey, grant);
-                    }
-                });
-            promises.push(handleGrantPromise);
-        }
+//         const promises = [];
 
-        promises.push(this.putModel(key, payload, expiresIn));
+//         const grantId = payload.grantId;
+//         if (grantId) {
+//             const grantKey = grantKeyFor(grantId);
+//             const handleGrantPromise = this.docClient.get({ Key: { key: grantKey } }).promise()
+//                 .then(grant => {
+//                     if (!grant) {
+//                         return putModel(grantKey, [key]);
+//                     } else {
+//                         grant.push(key);
+//                         return putModel(grantKey, grant);
+//                     }
+//                 });
+//             promises.push(handleGrantPromise);
+//         }
 
-        return Promise.all(promises);
-    }
+//         promises.push(this.putModel(key, payload, expiresIn));
 
-    /**
-     *
-     * Return previously stored instance of an oidc-provider model.
-     *
-     * @return {Promise} Promise fulfilled with either Object (when found and not dropped yet due to
-     * expiration) or falsy value when not found anymore. Rejected with error when encountered.
-     * @param {string} id Identifier of oidc-provider model
-     *
-     */
-    find(id) {
-        const key = this.key(id);
-        return this.docClient.get({ Key: { key: key } }).promise()
-            .then(getResult => {
-                console.log("Retrieved item:", JSON.stringify(getResult, null, 2));
-            })
-            .catch(error => {
-                console.error("Error:" + error);
-                throw error;
-            });
-    }
+//         return Promise.all(promises);
+//     }
 
-    /**
-     *
-     * Mark a stored oidc-provider model as consumed (not yet expired though!). Future finds for this
-     * id should be fulfilled with an object containing additional property named "consumed".
-     *
-     * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
-     * encountered.
-     * @param {string} id Identifier of oidc-provider model
-     *
-     */
-    consume(id) {
-        const key = this.key(id);
-        return this.docClient.get({ Key: { key: key } }).promise()
-            .then(model => {
-                model.consumed = Date.now() / 1000;
-                return putModel(key, model);
-            });
-    }
+//     /**
+//      *
+//      * Return previously stored instance of an oidc-provider model.
+//      *
+//      * @return {Promise} Promise fulfilled with either Object (when found and not dropped yet due to
+//      * expiration) or falsy value when not found anymore. Rejected with error when encountered.
+//      * @param {string} id Identifier of oidc-provider model
+//      *
+//      */
+//     find(id) {
+//         const key = this.key(id);
+//         return this.docClient.get({ Key: { key: key } }).promise()
+//             .then(getResult => {
+//                 console.log("Retrieved item:", JSON.stringify(getResult, null, 2));
+//             })
+//             .catch(error => {
+//                 console.error("Error:" + error);
+//                 throw error;
+//             });
+//     }
 
-    /**
-     *
-     * Destroy/Drop/Remove a stored oidc-provider model and other grant related models. Future finds
-     * for this id should be fulfilled with falsy values.
-     *
-     * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
-     * encountered.
-     * @param {string} id Identifier of oidc-provider model
-     *
-     */
-    destroy(id) {
+//     /**
+//      *
+//      * Mark a stored oidc-provider model as consumed (not yet expired though!). Future finds for this
+//      * id should be fulfilled with an object containing additional property named "consumed".
+//      *
+//      * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
+//      * encountered.
+//      * @param {string} id Identifier of oidc-provider model
+//      *
+//      */
+//     consume(id) {
+//         const key = this.key(id);
+//         return this.docClient.get({ Key: { key: key } }).promise()
+//             .then(model => {
+//                 model.consumed = Date.now() / 1000;
+//                 return putModel(key, model);
+//             });
+//     }
 
-        /**
-         *
-         * See upsert for the note on grantId, it's imperitive to destroy all tokens with the same
-         * grantId when destroy is called. To query your persistancy store for the grantId of this token
-         * and also trigger a chain of removals for all related tokens is recommended.
-         *
-         */
+//     /**
+//      *
+//      * Destroy/Drop/Remove a stored oidc-provider model and other grant related models. Future finds
+//      * for this id should be fulfilled with falsy values.
+//      *
+//      * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
+//      * encountered.
+//      * @param {string} id Identifier of oidc-provider model
+//      *
+//      */
+//     destroy(id) {
 
-        const key = this.key(id);
+//         /**
+//          *
+//          * See upsert for the note on grantId, it's imperitive to destroy all tokens with the same
+//          * grantId when destroy is called. To query your persistancy store for the grantId of this token
+//          * and also trigger a chain of removals for all related tokens is recommended.
+//          *
+//          */
 
-        return this.docClient.get({ Key: { key: key } }).promise()
-            .then(model => {
+//         const key = this.key(id);
 
-                var promises = [];
+//         return this.docClient.get({ Key: { key: key } }).promise()
+//             .then(model => {
 
-                if (model && model.grantId) {
-                    const grantKey = grantKeyFor(grantId);
-                    this.docClient.get({ Key: { key: grantKey } }).promise()
-                        .then(tokenKeys => {
-                            tokenKeys.forEach(tokenKey => {
-                                promises.push(this.docClient.delete({ Key: { key: tokenKey } }));
-                            })
-                        };
-                }
+//                 var promises = [];
 
-                promises.push(this.docClient.delete({ Key: { key: key } }));
+//                 if (model && model.grantId) {
+//                     const grantKey = grantKeyFor(grantId);
+//                     this.docClient.get({ Key: { key: grantKey } }).promise()
+//                         .then(tokenKeys => {
+//                             tokenKeys.forEach(tokenKey => {
+//                                 promises.push(this.docClient.delete({ Key: { key: tokenKey } }));
+//                             })
+//                         };
+//                 }
 
-                // TODO: Check FSK: shouldn't the model with key == grantKey not also be deleted??
+//                 promises.push(this.docClient.delete({ Key: { key: key } }));
 
-                return Promise.all(promises);
-            })
+//                 // TODO: Check FSK: shouldn't the model with key == grantKey not also be deleted??
 
-    }
-}
+//                 return Promise.all(promises);
+//             })
 
-module.exports = DynamoDBAdapter;
+//     }
+// }
+
+// module.exports = DynamoDBAdapter;

@@ -12,12 +12,14 @@ const Provider = require('oidc-provider');
 const Account = require('./account');
 
 // require the DynamoDB adapter factory/class
-process.env.DYNAMODB_REGION = "eu-central-1"; // TODO: read this from serverless.yml region, or set it as environment variable there
-process.env.DYNAMODB_TABLE = "oidc-provider-models";
-const DynamoDBAdapter = require('./dynamodb_adapter');
+// process.env.DYNAMODB_REGION = "eu-central-1"; // TODO: read this from serverless.yml region, or set it as environment variable there
+// process.env.DYNAMODB_TABLE = "oidc-provider-models";
+const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
+AWS.config.update({ region: "eu-central-1" }); // TODO: read this from serverless.yml region, or set it as environment variable there
+const DynamoAdapter = require('./dynamo_adapter');
 
 
-const oidc = new Provider("http://TOREPLACE", {
+const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the handler.
 
   // oidc-provider only looks up the accounts by their ID when it has to read the claims,
   // passing it our Account model method is sufficient, it should return a Promise that resolves
@@ -41,7 +43,7 @@ const oidc = new Provider("http://TOREPLACE", {
     return `/interaction/${this.oidc.uuid}`;
   },
 
-  adapter: DynamoDBAdapter,
+  adapter: DynamoAdapter,
   
   features: {
     // disable the packaged interactions
@@ -79,13 +81,17 @@ var expressPromise = oidc.initialize({
   ],
 }).then(() => {
 
-  // TODO: What does proxy setting do??
+  // TODO: What does proxy setting do?? also check oidc.app.secure ?
   oidc.app.proxy = true;
 
   // TODO: What does keys setting do??
   // oidc.app.keys = process.env.SECURE_KEY.split(',');
   // TEMPORARILY setting fixed values here.
   oidc.app.keys = ["BA029827D9A1806C2F28A441B62D7B44B4F6ECFC78D85CCFD3C9E2989F2677FD", "606999196AB576E99482612FA4373717222D4A6E7F08D8FC85864522302B51C"];
+
+  DynamoAdapter.revoke.bind(DynamoAdapter)();
+
+  oidc.on('grant.revoked', DynamoAdapter.revoke.bind(DynamoAdapter));
 
 }).then(() => {
 
@@ -143,7 +149,6 @@ var expressPromise = oidc.initialize({
 
 module.exports.handler = (event, context, callback) => {
 
-  // TODO: can we still (re)set issuer here?
   oidc.issuer = `${event.isOffline ? "http" : "https"}://${event.headers.Host}${event.isOffline ? "" : "/" + event.requestContext.stage}`;
   console.log("oidc:" + JSON.stringify(oidc));
 

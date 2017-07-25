@@ -1,6 +1,17 @@
 # For full config options, check the docs: docs.serverless.com
 
-service: oidc-provider
+service: ${opt:instanceId}-oidc-provider
+
+custom:
+  accessTokensTableName: ${opt:instanceId}.AccessTokens
+  authorizationCodesTableName: ${opt:instanceId}.AuthorizationCodes
+  clientCredentialsTableName: ${opt:instanceId}.ClientCredentials
+  refreshTokensTableName: ${opt:instanceId}.RefreshTokens
+  sessionsTableName: ${opt:instanceId}.Sessions
+  clientsTableName: ${opt:instanceId}.Clients
+  initialAccessTokensTableName: ${opt:instanceId}.InitialAccessTokens
+  registrationAccessTokensTableName: ${opt:instanceId}.RegistrationAccessTokens
+  # issuerIdentifier: ${opt:issuer} # Not needed?
 
 provider:
   name: aws
@@ -9,14 +20,33 @@ provider:
   timeout: 15 # Avoid cold start timeouts.
   region: eu-central-1 # Frankfurt
   stage: ${opt:stage}
+  cfLogs: true
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${opt:instanceId}.*
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+  environment:
+    # ISSUER: ${self:custom.issuerIdentifier} # Not needed?
+    ACCESS_TOKENS_TABLE_NAME: ${self:custom.accessTokensTableName}
+    AUTHORIZATION_CODES_TABLE_NAME: ${self:custom.authorizationCodesTableName}
+    CLIENT_CREDENTIALS_TABLE_NAME: ${self:custom.clientCredentialsTableName}
+    REFRESH_TOKENS_TABLE_NAME: ${self:custom.refreshTokensTableName}
+    SESSIONS_TABLE_NAME: ${self:custom.sessionsTableName}
+    CLIENTS_TABLE_NAME: ${self:custom.clientsTableName}
+    INITIAL_ACCESS_TOKENS_TABLE_NAME: ${self:custom.initialAccessTokensTableName}
+    REGISTRATION_ACCESS_TOKENS_TABLE_NAME: ${self:custom.registrationAccessTokensTableName}
 
 functions:
   main:
-    # handler: handler.hello
+    environment:
+      DEBUG: oidc-provider:*
+
     handler: src/index.handler
 
     events:
@@ -25,3 +55,98 @@ functions:
 plugins:
   - serverless-offline
   - serverless-plugin-include-dependencies
+
+defaultTable: &tableDefault
+  Type: AWS::DynamoDB::Table
+  DeletionPolicy: Delete # TODO: Safer to choose Retain here?
+  Properties: &tablePropertiesDefault
+    AttributeDefinitions:
+      -
+        AttributeName: id
+        AttributeType: S
+    KeySchema:
+      -
+        AttributeName: id
+        KeyType: HASH
+    ProvisionedThroughput:
+      ReadCapacityUnits: 1
+      WriteCapacityUnits: 1
+
+ttlTablePropertiesDefault: &ttlTablePropertiesDefault
+  <<: *tablePropertiesDefault
+  # TODO: Enable TTL after initial testing!!
+  # TimeToLiveSpecification:
+  #   AttributeName: expiresAt
+  #   Enabled: true
+
+grantTablePropertiesDefault: &grantTablePropertiesDefault
+  <<: *ttlTablePropertiesDefault
+  AttributeDefinitions:
+    -
+      AttributeName: id
+      AttributeType: S
+    -
+      AttributeName: grantId
+      AttributeType: S
+  GlobalSecondaryIndexes:
+    -
+      IndexName: grantId-index
+      KeySchema:
+        -
+          AttributeName: grantId
+          KeyType: HASH
+      Projection:
+        ProjectionType: KEYS_ONLY
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+resources:
+  Resources:
+    sessionsTable:
+      <<: *tableDefault
+      Properties:
+        <<: *ttlTablePropertiesDefault # CHECK: is there an expiresAt field here?
+        TableName: ${self:custom.sessionsTableName}
+
+    accessTokensTable:
+      <<: *tableDefault
+      Properties:
+        <<: *grantTablePropertiesDefault
+        TableName: ${self:custom.accessTokensTableName}
+
+    authorizationCodesTable:
+      <<: *tableDefault
+      Properties:
+        <<: *grantTablePropertiesDefault
+        TableName: ${self:custom.authorizationCodesTableName}
+
+    refreshTokensTable:
+      <<: *tableDefault
+      Properties:
+        <<: *grantTablePropertiesDefault
+        TableName: ${self:custom.refreshTokensTableName}
+
+    clientCredentialsTable:
+      <<: *tableDefault
+      Properties:
+        <<: *tablePropertiesDefault
+        TableName: ${self:custom.clientCredentialsTableName}
+
+    clientsTable:
+      <<: *tableDefault
+      Properties:
+        <<: *tablePropertiesDefault
+        TableName: ${self:custom.clientsTableName}
+
+    initialAccessTokensTable:
+      <<: *tableDefault
+      Properties:
+        <<: *ttlTablePropertiesDefault
+        TableName: ${self:custom.initialAccessTokensTableName}
+
+    registrationAccessTokensTable:
+      <<: *tableDefault
+      Properties:
+        <<: *ttlTablePropertiesDefault
+        TableName: ${self:custom.registrationAccessTokensTableName}
