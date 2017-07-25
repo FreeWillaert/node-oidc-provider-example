@@ -16,6 +16,7 @@
     "lodash": "^4.17.3",
     "lodash-inflection": "^1.5.0",
     "oidc-provider": "^1.7.0",
+    "serverless-dynamodb-autoscaling": "^0.2.0",
     "serverless-http": "^1.4.3"
   },
   "devDependencies": {

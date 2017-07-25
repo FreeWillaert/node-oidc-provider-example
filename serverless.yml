@@ -1,7 +1,7 @@
 # For full config options, check the docs: docs.serverless.com
 
 service: ${opt:instanceId}-oidc-provider
-
+  
 custom:
   accessTokensTableName: ${opt:instanceId}.AccessTokens
   authorizationCodesTableName: ${opt:instanceId}.AuthorizationCodes
@@ -12,6 +12,37 @@ custom:
   initialAccessTokensTableName: ${opt:instanceId}.InitialAccessTokens
   registrationAccessTokensTableName: ${opt:instanceId}.RegistrationAccessTokens
   # issuerIdentifier: ${opt:issuer} # Not needed?
+
+  defaultCapacities:
+    minimum: 1
+    maximum: 5
+    usage: 0.7
+
+  capacities:
+    - table: sessionsTable
+      read: ${self:custom.defaultCapacities}
+      write: ${self:custom.defaultCapacities}
+    - table: accessTokensTable
+      read: ${self:custom.defaultCapacities}
+      write: ${self:custom.defaultCapacities}
+    - table: authorizationCodesTable
+      read: ${self:custom.defaultCapacities}
+      write: ${self:custom.defaultCapacities}
+    - table: refreshTokensTable
+      read: ${self:custom.defaultCapacities}
+      write: ${self:custom.defaultCapacities}
+    - table: clientCredentialsTable
+      read: ${self:custom.defaultCapacities}
+      write: ${self:custom.defaultCapacities}
+    - table: clientsTable
+      read: ${self:custom.defaultCapacities}
+      write: ${self:custom.defaultCapacities}
+    - table: initialAccessTokensTable
+      read: ${self:custom.defaultCapacities}
+      write: ${self:custom.defaultCapacities}
+    - table: registrationAccessTokensTable
+      read: ${self:custom.defaultCapacities}
+      write: ${self:custom.defaultCapacities}
 
 provider:
   name: aws
@@ -53,12 +84,13 @@ functions:
       - http: ANY {proxy+}
 
 plugins:
+  - serverless-dynamodb-autoscaling
   - serverless-offline
   - serverless-plugin-include-dependencies
 
 defaultTable: &tableDefault
   Type: AWS::DynamoDB::Table
-  DeletionPolicy: Delete # TODO: Safer to choose Retain here?
+  DeletionPolicy: Retain # TODO: Safer to choose Retain here?
   Properties: &tablePropertiesDefault
     AttributeDefinitions:
       -
