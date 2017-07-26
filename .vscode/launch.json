@@ -7,6 +7,22 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch Serverless Offline",
+            "program": "${workspaceRoot}/node_modules/serverless/bin/serverless",
+            "args": [
+                "offline", "start",
+                "--instanceId", "tenant0", 
+                "-s", "dev",
+                "--aws-profile", "sitcom"
+            ],
+            "protocol": "auto",
+            "env": {
+                "DEBUG": "oidc-provider:*"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch test.js",
             "program": "${workspaceRoot}/quicktests.js"
         }
