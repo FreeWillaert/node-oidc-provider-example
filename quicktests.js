@@ -92,9 +92,12 @@ const event4 = {
     "isOffline": true
 };
 
-const event = event4;
+const event = event2;
 const context = {};
 process.env.AWS_PROFILE = "sitcom";
+process.env.ACCESS_TOKENS_TABLE_NAME = "tenant0.AccessTokens";
+//TODO: more tables... or read them from serverless.yml?
+
 handler.handler(event, context, function (error, result) {
     if (error) {
         console.error(error);
