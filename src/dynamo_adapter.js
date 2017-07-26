@@ -29,20 +29,20 @@ function indexQuery(tableName, grantId) {
 }
 
 const resolved = Promise.resolve();
-const rejected = Promise.reject(new Error('noop called, why?!'));
+const rejected = (params) => Promise.reject(new Error('noop called, why?!' + JSON.stringify(params)));
 
 const noop = {
-  upsert() {
-    return rejected;
+  upsert(...params) {
+    return rejected(params);
   },
-  find() {
+  find(...params) {
     return resolved;
   },
-  consume() {
-    return rejected;
+  consume(...params) {
+    return rejected(params);
   },
-  destroy() {
-    return rejected;
+  destroy(...params) {
+    return rejected(params);
   },
 };
 
@@ -70,7 +70,10 @@ class DynamoAdapter {
    *
    */
   constructor(name) {
-    if (adapters.indexOf(name) === -1) return noop;
+    if (adapters.indexOf(name) === -1) {
+      console.warn("RETURNING NOOP");
+      return noop;
+    } 
 
     const table = _.chain(name)
       .pluralize()
