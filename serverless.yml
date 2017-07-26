@@ -33,6 +33,8 @@ provider:
     INITIAL_ACCESS_TOKENS_TABLE_NAME: ${self:custom.initialAccessTokensTableName}
     REGISTRATION_ACCESS_TOKENS_TABLE_NAME: ${self:custom.registrationAccessTokensTableName}
     COOKIE_KEYS: "currentsecret,previoussecret" # Should be rotated over time!
+    AWS_PROFILE: ${opt:aws-profile}
+    AWS_REGION: ${self:provider.region}
 
 functions:
   main:

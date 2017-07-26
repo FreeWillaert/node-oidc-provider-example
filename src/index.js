@@ -12,10 +12,7 @@ const Provider = require('oidc-provider');
 const Account = require('./account');
 
 // require the DynamoDB adapter factory/class
-// process.env.DYNAMODB_REGION = "eu-central-1"; // TODO: read this from serverless.yml region, or set it as environment variable there
-// process.env.DYNAMODB_TABLE = "oidc-provider-models";
 const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
-AWS.config.update({ region: "eu-central-1" }); // TODO: read this from serverless.yml region, or set it as environment variable there
 const DynamoAdapter = require('./dynamo_adapter');
 
 
@@ -166,17 +163,24 @@ var expressPromise = oidc.initialize({
 
 module.exports.handler = (event, context, callback) => {
 
+  function testCallback(error, result) {
+    console.log(JSON.stringify(result));
+    callback(error, result);
+  }
+
+
   console.log("HANDLING EVENT:" + JSON.stringify(event, null, 2));
+
+  if (!context.callbackWaitsForEmptyEventLoop) console.warn("!!! callbackWaitsForEmptyEventLoop IS FALSE !!!");
 
   oidc.issuer = `${event.isOffline ? "http" : "https"}://${event.headers.Host}`;
 
   expressPromise.then((expressApp) => {
 
-    if (!context.callbackWaitsForEmptyEventLoop) console.warn("!!! callbackWaitsForEmptyEventLoop IS FALSE !!!");
 
     // Skip favicon requests. Note: it is better to avoid favicon.ico requests being made.
     if (event.path === "/favicon.ico") return callback(null, { statusCode: 200, body: "" });
-    
-    serverlessHttp(expressApp)(event, context, callback);
-  })
+
+    serverlessHttp(expressApp)(event, context, testCallback);
+  });
 }
