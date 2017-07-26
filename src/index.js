@@ -44,7 +44,7 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
   },
 
   adapter: DynamoAdapter,
-  
+
   features: {
     // disable the packaged interactions
     devInteractions: false,
@@ -59,6 +59,8 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
     requestUri: true,
     revocation: true,
     sessionManagement: true,
+    oauthNativeApps: true,
+    pkce: true
   },
 });
 
@@ -71,12 +73,32 @@ var expressPromise = oidc.initialize({
   keystore,
   integrity,
   clients: [
+    // Browser-based client
     {
       client_id: 'foo',
       redirect_uris: ['https://example.com'],
       response_types: ['id_token token'],
       grant_types: ['implicit'],
       token_endpoint_auth_method: 'none',
+    },
+    // Web client
+    {
+      client_id: 'foo2',
+      client_secret: 'bar2',
+      redirect_uris: ['https://demo.c2id.com/oidc-client/cb'],
+      response_types: ['code'],
+      grant_types: ['authorization_code', 'refresh_token'],
+      token_endpoint_auth_method: 'client_secret_basic',
+    },
+    // Mobile client with pkce
+    {
+      application_type: 'native',
+      client_id: 'foo3',
+      client_name: 'My Mobile Client',
+      redirect_uris: ['https://demo.c2id.com/oidc-client/cb'],
+      response_types: ['code'],
+      grant_types: ['authorization_code'], // Assume: no refresh token for native app...?
+      token_endpoint_auth_method: 'none', // No password needed on token endpoint!
     },
   ],
 }).then(() => {
@@ -145,6 +167,11 @@ var expressPromise = oidc.initialize({
 
 
 module.exports.handler = (event, context, callback) => {
+  // Skip favicon requests. Note: it is better to avoid favicon.ico requests being made.
+  if (event.path === "/favicon.ico") return callback(null, { statusCode: 200, body: "" });
+
+  console.log("HANDLING EVENT:" + JSON.stringify(event, null, 2));
+  if (!context.callbackWaitsForEmptyEventLoop) console.warn("!!! callbackWaitsForEmptyEventLoop IS FALSE !!!");
 
   oidc.issuer = `${event.isOffline ? "http" : "https"}://${event.headers.Host}`;
 
