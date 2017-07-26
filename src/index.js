@@ -163,12 +163,6 @@ var expressPromise = oidc.initialize({
 
 module.exports.handler = (event, context, callback) => {
 
-  function testCallback(error, result) {
-    console.log(JSON.stringify(result));
-    callback(error, result);
-  }
-
-
   console.log("HANDLING EVENT:" + JSON.stringify(event, null, 2));
 
   if (!context.callbackWaitsForEmptyEventLoop) console.warn("!!! callbackWaitsForEmptyEventLoop IS FALSE !!!");
@@ -181,6 +175,6 @@ module.exports.handler = (event, context, callback) => {
     // Skip favicon requests. Note: it is better to avoid favicon.ico requests being made.
     if (event.path === "/favicon.ico") return callback(null, { statusCode: 200, body: "" });
 
-    serverlessHttp(expressApp)(event, context, testCallback);
+    serverlessHttp(expressApp)(event, context, callback);
   });
 }
