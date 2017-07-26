@@ -84,10 +84,7 @@ var expressPromise = oidc.initialize({
   // TODO: What does proxy setting do?? also check oidc.app.secure ?
   oidc.app.proxy = true;
 
-  // TODO: What does keys setting do??
-  // oidc.app.keys = process.env.SECURE_KEY.split(',');
-  // TEMPORARILY setting fixed values here.
-  oidc.app.keys = ["BA029827D9A1806C2F28A441B62D7B44B4F6ECFC78D85CCFD3C9E2989F2677FD", "606999196AB576E99482612FA4373717222D4A6E7F08D8FC85864522302B51C"];
+  oidc.app.keys = process.env.COOKIE_KEYS.split(',');
 
   DynamoAdapter.revoke.bind(DynamoAdapter)();
 
@@ -149,8 +146,7 @@ var expressPromise = oidc.initialize({
 
 module.exports.handler = (event, context, callback) => {
 
-  oidc.issuer = `${event.isOffline ? "http" : "https"}://${event.headers.Host}${event.isOffline ? "" : "/" + event.requestContext.stage}`;
-  console.log("oidc:" + JSON.stringify(oidc));
+  oidc.issuer = `${event.isOffline ? "http" : "https"}://${event.headers.Host}`;
 
   expressPromise.then((expressApp) => {
     serverlessHttp(expressApp)(event, context, callback);

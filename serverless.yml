@@ -32,7 +32,7 @@ provider:
     CLIENTS_TABLE_NAME: ${self:custom.clientsTableName}
     INITIAL_ACCESS_TOKENS_TABLE_NAME: ${self:custom.initialAccessTokensTableName}
     REGISTRATION_ACCESS_TOKENS_TABLE_NAME: ${self:custom.registrationAccessTokensTableName}
-    COOKIE_KEYS: '["currentsecret", "previoussecret"]' # Should be rotated over time!
+    COOKIE_KEYS: "currentsecret,previoussecret" # Should be rotated over time!
 
 functions:
   main:
