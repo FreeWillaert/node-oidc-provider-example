@@ -108,8 +108,6 @@ var expressPromise = oidc.initialize({
 
   oidc.app.keys = process.env.COOKIE_KEYS.split(',');
 
-  DynamoAdapter.revoke.bind(DynamoAdapter)();
-
   oidc.on('grant.revoked', DynamoAdapter.revoke.bind(DynamoAdapter));
 
 }).then(() => {
@@ -167,15 +165,18 @@ var expressPromise = oidc.initialize({
 
 
 module.exports.handler = (event, context, callback) => {
-  // Skip favicon requests. Note: it is better to avoid favicon.ico requests being made.
-  if (event.path === "/favicon.ico") return callback(null, { statusCode: 200, body: "" });
 
   console.log("HANDLING EVENT:" + JSON.stringify(event, null, 2));
-  if (!context.callbackWaitsForEmptyEventLoop) console.warn("!!! callbackWaitsForEmptyEventLoop IS FALSE !!!");
 
   oidc.issuer = `${event.isOffline ? "http" : "https"}://${event.headers.Host}`;
 
   expressPromise.then((expressApp) => {
+
+    if (!context.callbackWaitsForEmptyEventLoop) console.warn("!!! callbackWaitsForEmptyEventLoop IS FALSE !!!");
+
+    // Skip favicon requests. Note: it is better to avoid favicon.ico requests being made.
+    if (event.path === "/favicon.ico") return callback(null, { statusCode: 200, body: "" });
+    
     serverlessHttp(expressApp)(event, context, callback);
   })
 }
