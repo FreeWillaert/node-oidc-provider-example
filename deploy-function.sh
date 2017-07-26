@@ -12,4 +12,4 @@ stage=$2
 instanceId=$3
 # issuerDomain=$4
 
-./node_modules/serverless/bin/serverless deploy --aws-profile $awsProfile -s $stage --instanceId $instanceId # --issuerDomain $issuerDomain
+./node_modules/serverless/bin/serverless deploy function -f main --aws-profile $awsProfile -s $stage --instanceId $instanceId # --issuerDomain $issuerDomain
