@@ -2277,7 +2277,7 @@ object.omit@^2.0.0:
     for-own "^0.1.4"
     is-extendable "^0.1.1"
 
-oidc-provider@1:
+oidc-provider@^1.15.12:
   version "1.15.12"
   resolved "https://registry.yarnpkg.com/oidc-provider/-/oidc-provider-1.15.12.tgz#c26b998f5ea5b810331f728bd39f77ad562b0516"
   dependencies:
