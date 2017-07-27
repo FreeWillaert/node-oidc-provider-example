@@ -23,7 +23,6 @@ provider:
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${opt:instanceId}.*
 
   environment:
-    # ISSUER: ${self:custom.issuerIdentifier} # Not needed?
     ACCESS_TOKENS_TABLE_NAME: ${self:custom.accessTokensTableName}
     AUTHORIZATION_CODES_TABLE_NAME: ${self:custom.authorizationCodesTableName}
     CLIENT_CREDENTIALS_TABLE_NAME: ${self:custom.clientCredentialsTableName}
@@ -32,7 +31,7 @@ provider:
     CLIENTS_TABLE_NAME: ${self:custom.clientsTableName}
     INITIAL_ACCESS_TOKENS_TABLE_NAME: ${self:custom.initialAccessTokensTableName}
     REGISTRATION_ACCESS_TOKENS_TABLE_NAME: ${self:custom.registrationAccessTokensTableName}
-    COOKIE_KEYS: "currentsecret,previoussecret" # Should be rotated over time!
+    COOKIE_KEYS: "currentsecret,previoussecret" # This is just for the sake of example - the secrets should not be kept her in config, and should be rotated over time - e.g. by a scheduled lambda.
     AWS_PROFILE: ${opt:aws-profile}
     AWS_REGION: ${self:provider.region}
 
@@ -47,9 +46,10 @@ functions:
       - http: ANY {proxy+}
 
 plugins:
-  - serverless-dynamodb-autoscaling
   - serverless-offline
   - serverless-plugin-include-dependencies
+  # DynamoDB Auto Scaling is disabled since it seems to cause problems from time to time.
+  # - serverless-dynamodb-autoscaling
 
   
 custom:
@@ -62,6 +62,7 @@ custom:
   initialAccessTokensTableName: ${opt:instanceId}.InitialAccessTokens
   registrationAccessTokensTableName: ${opt:instanceId}.RegistrationAccessTokens
   # issuerDomain: ${opt:issuerDomain}
+
 
   # defaultCapacities:
   #   minimum: 1
@@ -191,6 +192,7 @@ resources:
         TableName: ${self:custom.registrationAccessTokensTableName}
 
 
+    # Path Mapping is disabled since it seems to cause problems from time to time.
     # pathmapping:
     #   Type: AWS::ApiGateway::BasePathMapping
     #   Properties:
