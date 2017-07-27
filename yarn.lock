@@ -368,7 +368,7 @@ body-parser@^1.15.2:
     raw-body "~2.2.0"
     type-is "~1.6.14"
 
-boom@3.x.x:
+boom@3.X.X, boom@3.x.x:
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/boom/-/boom-3.2.2.tgz#0f0cc5d04adc5003b8c7d71f42cca7271fef0e78"
   dependencies:
@@ -603,7 +603,7 @@ cookiejar@^2.0.6:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/cookiejar/-/cookiejar-2.1.1.tgz#41ad57b1b555951ec171412a81942b1e8200d34a"
 
-cookies@^0.6.2, cookies@~0.6.1:
+cookies@~0.6.1:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/cookies/-/cookies-0.6.2.tgz#6ac1b052895208e8fc4c4f5f86a9ed31b9cb5ccf"
   dependencies:
@@ -897,9 +897,9 @@ es6-map@^0.1.3:
     es6-symbol "~3.1.0"
     event-emitter "~0.3.4"
 
-es6-promise@^3.1.2:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-3.3.1.tgz#a08cdde84ccdbf34d027a1451bc91d4bcd28a613"
+es6-promise@^4.0.5:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-4.1.1.tgz#8811e90915d9a0dba36274f0b242dbda78f9c92a"
 
 es6-set@~0.1.3:
   version "0.1.4"
@@ -1440,6 +1440,15 @@ graphql@^0.10.0, graphql@^0.10.1:
   dependencies:
     iterall "^1.1.0"
 
+h2o2@^5.4.0:
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/h2o2/-/h2o2-5.4.0.tgz#d6857ca05355200c890b34a66606caba0229ed58"
+  dependencies:
+    boom "3.X.X"
+    hoek "4.X.X"
+    joi "9.X.X"
+    wreck "9.X.X"
+
 hapi-cors-headers@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/hapi-cors-headers/-/hapi-cors-headers-1.0.0.tgz#ab01318aff3d3a4aa8a4b90e250b509d6d8928f0"
@@ -1492,7 +1501,7 @@ heavy@4.x.x:
     hoek "4.x.x"
     joi "10.x.x"
 
-hoek@4.x.x:
+hoek@4.X.X, hoek@4.x.x:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-4.1.1.tgz#9cc573ffba2b7b408fb5e9c2a13796be94cddce9"
 
@@ -1802,7 +1811,7 @@ joi@10.x.x:
     items "2.x.x"
     topo "2.x.x"
 
-joi@9.x.x:
+joi@9.X.X, joi@9.x.x:
   version "9.2.0"
   resolved "https://registry.yarnpkg.com/joi/-/joi-9.2.0.tgz#3385ac790192130cbe230e802ec02c9215bbfeda"
   dependencies:
@@ -1833,14 +1842,6 @@ js-yaml@^3.8.3:
   dependencies:
     argparse "^1.0.7"
     esprima "^3.1.1"
-
-jsbn@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.0.tgz#650987da0dd74f4ebf5a11377a2aa2d273e97dfd"
-
-"jsbn@git+https://github.com/andyperlitch/jsbn.git":
-  version "1.0.0"
-  resolved "git+https://github.com/andyperlitch/jsbn.git#8717138e8a00a048c7935a40cdb1b47e361da9a5"
 
 jsesc@^1.3.0:
   version "1.3.0"
@@ -2217,18 +2218,16 @@ node-fetch@^1.6.0:
     encoding "^0.1.11"
     is-stream "^1.0.1"
 
-"node-forge@https://github.com/linuxwolf/forge/archive/browserify.tar.gz":
-  version "0.6.21-dev"
-  resolved "https://github.com/linuxwolf/forge/archive/browserify.tar.gz#02c237a5c7bdaf1ce38d91ded964d267b98c5b66"
-  dependencies:
-    jsbn "git+https://github.com/andyperlitch/jsbn.git"
+node-forge@^0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-0.7.1.tgz#9da611ea08982f4b94206b3beb4cc9665f20c300"
 
-node-jose@^0.9.0:
-  version "0.9.2"
-  resolved "https://registry.yarnpkg.com/node-jose/-/node-jose-0.9.2.tgz#2d0a1835400fa457cf62f8487b58f35add179d12"
+node-jose@^0.9.4:
+  version "0.9.4"
+  resolved "https://registry.yarnpkg.com/node-jose/-/node-jose-0.9.4.tgz#b9bad549cad63fde65c4ee63ef83c18e5d155334"
   dependencies:
-    es6-promise "^3.1.2"
-    jsbn "^0.1.0"
+    base64url "^2.0.0"
+    es6-promise "^4.0.5"
     lodash.assign "^4.0.8"
     lodash.clone "^4.3.2"
     lodash.fill "^3.2.2"
@@ -2240,9 +2239,8 @@ node-jose@^0.9.0:
     lodash.pick "^4.2.0"
     lodash.uniq "^4.2.1"
     long "^3.1.0"
-    node-forge "https://github.com/linuxwolf/forge/archive/browserify.tar.gz"
-    urlsafe-base64 "https://github.com/linuxwolf/urlsafe-base64/archive/encoding.tar.gz"
-    uuid "^2.0.1"
+    node-forge "^0.7.1"
+    uuid "^3.0.1"
 
 node-source-walk@^3.0.0, node-source-walk@^3.2.0:
   version "3.2.1"
@@ -2279,13 +2277,12 @@ object.omit@^2.0.0:
     for-own "^0.1.4"
     is-extendable "^0.1.1"
 
-oidc-provider@^1.7.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/oidc-provider/-/oidc-provider-1.10.0.tgz#fad4f5e95babcc036a3fb3349beb8d913629dd6d"
+oidc-provider@1:
+  version "1.15.12"
+  resolved "https://registry.yarnpkg.com/oidc-provider/-/oidc-provider-1.15.12.tgz#c26b998f5ea5b810331f728bd39f77ad562b0516"
   dependencies:
     base64url "^2.0.0"
     buffer-equals-constant "^1.0.0"
-    cookies "^0.6.2"
     debug "^2.4.4"
     ejs "^2.5.2"
     got "^6.1.1"
@@ -2296,7 +2293,7 @@ oidc-provider@^1.7.0:
     koa-router "^5.2.3"
     lodash "^4.5.0"
     lru-cache "^4.0.0"
-    node-jose "^0.9.0"
+    node-jose "^0.9.4"
     oidc-token-hash "^1.0.0"
     raw-body "^2.1.7"
     uuid "^3.0.0"
@@ -2783,13 +2780,14 @@ serverless-http@^1.4.3:
   version "1.4.3"
   resolved "https://registry.yarnpkg.com/serverless-http/-/serverless-http-1.4.3.tgz#9796995c2e6c52f9656f9c15671801a2a910ce45"
 
-serverless-offline@^3.14.2:
-  version "3.14.2"
-  resolved "https://registry.yarnpkg.com/serverless-offline/-/serverless-offline-3.14.2.tgz#8d04aa199a532b02f3c66114612a5f08a5dec25f"
+serverless-offline@^3.15.3:
+  version "3.15.3"
+  resolved "https://registry.yarnpkg.com/serverless-offline/-/serverless-offline-3.15.3.tgz#3ce94632ab557e036c0068fa1cd3972413d6d735"
   dependencies:
     babel-register "^6.18.0"
     boom "^4.2.0"
     crypto "^0.0.3"
+    h2o2 "^5.4.0"
     hapi "14.2.0"
     hapi-cors-headers "^1.0.0"
     js-string-escape "^1.0.1"
@@ -3135,10 +3133,6 @@ url@0.10.3:
     punycode "1.3.2"
     querystring "0.2.0"
 
-"urlsafe-base64@https://github.com/linuxwolf/urlsafe-base64/archive/encoding.tar.gz":
-  version "1.0.0"
-  resolved "https://github.com/linuxwolf/urlsafe-base64/archive/encoding.tar.gz#a543637726df3118ab5d98388ebb6b2618a0cdbb"
-
 user-home@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/user-home/-/user-home-2.0.0.tgz#9c70bfd8169bc1dcbf48604e0f04b8b49cde9e9f"
@@ -3157,11 +3151,11 @@ uuid@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.0.tgz#6728fc0459c450d796a99c31837569bdf672d728"
 
-uuid@3.0.1, uuid@^3.0.0:
+uuid@3.0.1, uuid@^3.0.0, uuid@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.1.tgz#6544bba2dfda8c1cf17e629a3a305e2bb1fee6c1"
 
-uuid@^2.0.1, uuid@^2.0.2:
+uuid@^2.0.2:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-2.0.3.tgz#67e2e863797215530dff318e5bf9dcebfd47b21a"
 
@@ -3204,6 +3198,13 @@ wreck@12.x.x:
   resolved "https://registry.yarnpkg.com/wreck/-/wreck-12.2.2.tgz#e21823d34c36d672004eefa347ae8c4f6050e3db"
   dependencies:
     boom "5.x.x"
+    hoek "4.x.x"
+
+wreck@9.X.X:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/wreck/-/wreck-9.0.0.tgz#1de63d49bb07b94fe718864b8be63176e63331ec"
+  dependencies:
+    boom "3.x.x"
     hoek "4.x.x"
 
 write-file-atomic@^2.1.0:
