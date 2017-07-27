@@ -18,6 +18,7 @@
             "protocol": "auto",
             "env": {
                 "DEBUG": "oidc-provider:*"
+                //, "SLS_DEBUG": "*"
             }
         },
         {
