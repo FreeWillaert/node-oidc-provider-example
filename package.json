@@ -15,7 +15,7 @@
     "ioredis": "^2.4.3",
     "lodash": "^4.17.3",
     "lodash-inflection": "^1.5.0",
-    "oidc-provider": "^1.7.0",
+    "oidc-provider": "^1.15.12",
     "serverless-dynamodb-autoscaling": "^0.2.0",
     "serverless-http": "^1.4.3"
   },
@@ -24,7 +24,7 @@
     "eslint-config-airbnb-base": "^11.0.0",
     "eslint-plugin-import": "^2.2.0",
     "serverless": "^1.16.1",
-    "serverless-offline": "^3.14.2",
+    "serverless-offline": "^3.15.3",
     "serverless-plugin-include-dependencies": "^2.1.2"
   }
 }
