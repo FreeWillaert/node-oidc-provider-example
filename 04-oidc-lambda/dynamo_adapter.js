@@ -71,7 +71,6 @@ class DynamoAdapter {
    */
   constructor(name) {
     if (adapters.indexOf(name) === -1) {
-      console.warn("RETURNING NOOP");
       return noop;
     } 
 

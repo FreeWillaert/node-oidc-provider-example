@@ -32,8 +32,6 @@ provider:
     INITIAL_ACCESS_TOKENS_TABLE_NAME: ${self:custom.initialAccessTokensTableName}
     REGISTRATION_ACCESS_TOKENS_TABLE_NAME: ${self:custom.registrationAccessTokensTableName}
     COOKIE_KEYS: "currentsecret,previoussecret" # This is just for the sake of example - the secrets should not be kept her in config, and should be rotated over time - e.g. by a scheduled lambda.
-    AWS_PROFILE: ${opt:aws-profile}
-    AWS_REGION: ${self:provider.region}
 
 functions:
   main:
