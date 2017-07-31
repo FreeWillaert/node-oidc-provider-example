@@ -10,15 +10,22 @@
             "name": "Launch Serverless Offline",
             "program": "${workspaceRoot}/node_modules/serverless/bin/serverless",
             "args": [
-                "offline", "start",
-                "--instanceId", "tenant0", 
-                "-s", "dev",
-                "--aws-profile", "sitcom"
+                "offline",
+                "start",
+                "--noTimeout",
+                "--instanceId",
+                "tenant0",
+                "-s",
+                "dev",
+                "--aws-profile",
+                "sitcom"
             ],
             "protocol": "auto",
             "env": {
-                "DEBUG": "oidc-provider:*"
-                //, "SLS_DEBUG": "*"
+                "DEBUG": "oidc-provider:*",
+                //, "SLS_DEBUG": "*",
+                "AWS_PROFILE": "sitcom",
+                "AWS_REGION": "eu-central-1"
             }
         },
         {
