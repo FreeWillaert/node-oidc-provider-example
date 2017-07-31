@@ -30,6 +30,13 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
     email: ['email', 'email_verified'],
   },
 
+  // scopes here overwrites the defaults, so must include those as well (at least offline_access)
+  scopes: 
+    ['address', 'email', 'offline_access', 'openid', 'phone', 'profile']
+    .concat([ "api_action1", "api_action2"]),
+
+  extraParams: ['resource', 'audience'],
+
   // let's tell oidc-provider where our own interactions will be
   // setting a nested route is just good practice so that users
   // don't run into weird issues with multiple interactions open
@@ -38,6 +45,16 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
     // this => oidc koa request context;
     return `/interaction/${this.oidc.uuid}`;
   },
+
+  // // TODO: Test interaction check 
+  // interactionCheck() {
+  //   return {
+  //       error: 'consent_required',
+  //       error_description: 'user has not given all required consents yet',
+  //       reason: 'consent_prompt',
+  //     }
+  // },
+
 
   adapter: DynamoAdapter,
 
@@ -58,7 +75,8 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
     oauthNativeApps: true,
     pkce: {
       skipClientAuth: true
-    }
+    },
+    jwtat: true
   },
 });
 
@@ -74,7 +92,7 @@ var expressPromise = oidc.initialize({
     // Browser-based client
     {
       client_id: 'foo',
-      redirect_uris: ['https://example.com'],
+      redirect_uris: ['https://jwt.io'],
       response_types: ['id_token token'],
       grant_types: ['implicit'],
       token_endpoint_auth_method: 'none',
