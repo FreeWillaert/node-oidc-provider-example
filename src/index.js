@@ -33,9 +33,11 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
   // scopes here overwrites the defaults, so must include those as well (at least offline_access)
   scopes: 
     ['address', 'email', 'offline_access', 'openid', 'phone', 'profile']
-    .concat([ "api_action1", "api_action2"]),
+    .concat([ "myapiaction1", "myapiaction2"]),
 
   extraParams: ['resource', 'audience'],
+
+  
 
   // let's tell oidc-provider where our own interactions will be
   // setting a nested route is just good practice so that users
@@ -101,7 +103,7 @@ var expressPromise = oidc.initialize({
     {
       client_id: 'foo2',
       client_secret: 'bar2',
-      redirect_uris: ['https://demo.c2id.com/oidc-client/cb'],
+      redirect_uris: ['http://127.0.0.1:8080/oidc-client/cb','https://demo.c2id.com/oidc-client/cb'],
       response_types: ['code'],
       grant_types: ['authorization_code', 'refresh_token'],
       token_endpoint_auth_method: 'client_secret_basic',
