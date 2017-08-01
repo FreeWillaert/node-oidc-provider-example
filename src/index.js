@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const assert = require('assert');
 const path = require('path');
 const express = require('express');
@@ -14,6 +15,19 @@ const Account = require('./account');
 // require the DynamoDB adapter factory/class
 const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
 const DynamoAdapter = require('./dynamo_adapter');
+
+const allowedAccessTokenScopes = {
+  foo: {
+    default: ["openid"],
+    "https://api.example.com": ["action1", "action2"],
+    "myapi": ["myapiaction1", "phone"]
+  },
+  foo2: {
+    default: ["openid", "mydefaultaction1"],
+    "https://api.example.com": ["action1"],
+    "myapi": ["myapiaction2"]
+  }
+};
 
 const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the handler.
 
@@ -31,13 +45,37 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
   },
 
   // scopes here overwrites the defaults, so must include those as well (at least offline_access)
-  scopes: 
-    ['address', 'email', 'offline_access', 'openid', 'phone', 'profile']
-    .concat([ "myapiaction1", "myapiaction2"]),
+  scopes:
+  ['address', 'email', 'offline_access', 'openid', 'phone', 'profile']
+    .concat(["myapiaction1", "myapiaction2"]),
 
   extraParams: ['resource', 'audience'],
 
-  
+
+
+  authorizeAccessTokenTargets(clientId, requestedTargets) { // requestedTargets is an array
+    let allowedTargets = allowedAccessTokenScopes[clientId] && Object.keys(allowedAccessTokenScopes[clientId]);
+    allowedTargets = _.pull(allowedTargets, 'default');
+
+    const authorizedTargets = _.intersection(requestedTargets, allowedTargets);
+    return Promise.resolve(authorizedTargets); // must return a Promise
+  },
+
+  authorizeAccessTokenScopes(clientId, requestedTargets, requestedScopes) { // requestedTargets and requestedScopes are arrays
+    // Even though we cannot link scopes to specific targets, at least don't allow any scopes of targets that are not authorized 
+    // (i.e. not requested or not allowed for the specified client) and not allowed by default.
+    let allowedTargets = allowedAccessTokenScopes[clientId] && Object.keys(allowedAccessTokenScopes[clientId]);
+    allowedTargets = _.intersection(requestedTargets, allowedTargets);
+    allowedTargets.push('default')
+
+    let authorizedScopes = [];
+    allowedTargets.forEach(target => {
+      const scopesForTarget = allowedAccessTokenScopes[clientId][target];
+      authorizedScopes = _.union(authorizedScopes, _.intersection(requestedScopes, scopesForTarget))
+    })
+
+    return Promise.resolve(authorizedScopes); // must return a Promise
+  },
 
   // let's tell oidc-provider where our own interactions will be
   // setting a nested route is just good practice so that users
@@ -103,7 +141,7 @@ var expressPromise = oidc.initialize({
     {
       client_id: 'foo2',
       client_secret: 'bar2',
-      redirect_uris: ['http://127.0.0.1:8080/oidc-client/cb','https://demo.c2id.com/oidc-client/cb'],
+      redirect_uris: ['http://127.0.0.1:8080/oidc-client/cb', 'https://demo.c2id.com/oidc-client/cb'],
       response_types: ['code'],
       grant_types: ['authorization_code', 'refresh_token'],
       token_endpoint_auth_method: 'client_secret_basic',
