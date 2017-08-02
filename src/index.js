@@ -45,8 +45,10 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
   },
 
   // scopes here overwrites the defaults, so must include those as well (at least offline_access)
+  // note: should auto-include all 'allowedAccessTokenScopes' from above
   scopes:
   ['address', 'email', 'offline_access', 'openid', 'phone', 'profile']
+    .concat(["action1", "action2"])
     .concat(["myapiaction1", "myapiaction2"]),
 
   extraParams: ['resource', 'audience'],
@@ -66,12 +68,14 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
     // (i.e. not requested or not allowed for the specified client) and not allowed by default.
     let allowedTargets = allowedAccessTokenScopes[clientId] && Object.keys(allowedAccessTokenScopes[clientId]);
     allowedTargets = _.intersection(requestedTargets, allowedTargets);
-    allowedTargets.push('default')
+    allowedTargets.push('default');
 
     let authorizedScopes = [];
     allowedTargets.forEach(target => {
-      const scopesForTarget = allowedAccessTokenScopes[clientId][target];
-      authorizedScopes = _.union(authorizedScopes, _.intersection(requestedScopes, scopesForTarget))
+      const scopesForTarget = allowedAccessTokenScopes[clientId] && allowedAccessTokenScopes[clientId][target];
+      if (scopesForTarget) {
+        authorizedScopes = _.union(authorizedScopes, _.intersection(requestedScopes, scopesForTarget))
+      }
     })
 
     return Promise.resolve(authorizedScopes); // must return a Promise
@@ -83,7 +87,8 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
   // at a time.
   interactionUrl() {
     // this => oidc koa request context;
-    return `/interaction/${this.oidc.uuid}`;
+    console.log(JSON.stringify(this));
+    return `/interaction/${this.oidc.uuid}?client_id=${this.oidc.client.clientId}`;
   },
 
   // // TODO: Test interaction check 
@@ -132,6 +137,13 @@ var expressPromise = oidc.initialize({
     // Browser-based client
     {
       client_id: 'foo',
+      redirect_uris: ['https://jwt.io'],
+      response_types: ['id_token token'],
+      grant_types: ['implicit'],
+      token_endpoint_auth_method: 'none',
+    },
+    {
+      client_id: 'foolocal',
       redirect_uris: ['https://jwt.io'],
       response_types: ['id_token token'],
       grant_types: ['implicit'],
@@ -251,8 +263,12 @@ module.exports.handler = (event, context, callback) => {
       result.headers.location = "http" + result.headers.location.substring(5);
     }
 
+    // setFrameHeaders(event, result);
+
     callback(error, result);
   }
+
+
 
   console.log("Handling event:" + JSON.stringify(event, null, 2));
 
@@ -268,4 +284,40 @@ module.exports.handler = (event, context, callback) => {
 
     serverlessHttp(expressApp)(event, context, event.isOffline ? offlineCallback : callback);
   });
+
+
+
+  // const iframeCallback = function (error, result) {
+  //   setFrameHeaders(event, result);
+  //   callback(error, result);
+  // }
+
+  // const setFrameHeaders = function (event, result) {
+
+  //   // To be elaborated: client_id is available on /auth request but not on interaction requests; 
+  //   // however, it appears that in case of 302, the X-Frame-Options/Content-Security-Policy headers are not
+  //   // (or not always) applied.
+  //   // => client_id should be passed on through redirects (ok for interactionUrl, but not further )
+
+  //   // X-Frame-Options is deprecated, and Chrome does not support ALLOW-FROM.
+  //   // On the other hand, older browsers don't support Content-Security-Options, so set both.
+
+  //   if (event.queryStringParameters && event.queryStringParameters.client_id) {
+  //     switch (event.queryStringParameters.client_id) {
+  //       case "foo":
+  //         result.headers["X-Frame-Options"] = "ALLOW-FROM https://example.com/";
+  //         result.headers["Content-Security-Policy"] = "frame-ancestors https://example.com";
+  //         break;
+  //       case "foolocal":
+  //         result.headers["X-Frame-Options"] = "ALLOW-FROM http://localhost:3000/";
+  //         result.headers["Content-Security-Policy"] = "frame-ancestors http://localhost:3000";
+  //         break;
+  //       default:
+  //         result.headers["X-Frame-Options"] = "DENY";
+  //         break;
+  //     }
+  //   } else {
+  //     console.log("No queryStringParameters for path " + event.path);
+  //   }
+  // }  
 }
