@@ -54,8 +54,7 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
   extraParams: ['resource', 'audience'],
 
 
-
-  authorizeAccessTokenTargets(clientId, requestedTargets) { // requestedTargets is an array
+  authorizeAccessTokenTargets(accountId, responseType, grantType, clientId, requestedTargets) { // requestedTargets is an array
     let allowedTargets = allowedAccessTokenScopes[clientId] && Object.keys(allowedAccessTokenScopes[clientId]);
     allowedTargets = _.pull(allowedTargets, 'default');
 
@@ -63,7 +62,7 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
     return Promise.resolve(authorizedTargets); // must return a Promise
   },
 
-  authorizeAccessTokenScopes(clientId, requestedTargets, requestedScopes) { // requestedTargets and requestedScopes are arrays
+  authorizeAccessTokenScopes(accountId, responseType, grantType, clientId, requestedTargets, requestedScopes) { // requestedTargets and requestedScopes are arrays
     // Even though we cannot link scopes to specific targets, at least don't allow any scopes of targets that are not authorized 
     // (i.e. not requested or not allowed for the specified client) and not allowed by default.
     let allowedTargets = allowedAccessTokenScopes[clientId] && Object.keys(allowedAccessTokenScopes[clientId]);
