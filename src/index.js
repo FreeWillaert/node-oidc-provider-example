@@ -6,6 +6,7 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const serverlessHttp = require('serverless-http');
+const ConsentStore = require('./dummy_consent_store');
 
 const Provider = require('oidc-provider');
 
@@ -29,7 +30,7 @@ const allowedAccessTokenScopes = {
   }
 };
 
-const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the handler.
+const oidcConfiguration = { // The issuer will be set in the handler.
 
   // oidc-provider only looks up the accounts by their ID when it has to read the claims,
   // passing it our Account model method is sufficient, it should return a Promise that resolves
@@ -46,8 +47,7 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
 
   // scopes here overwrites the defaults, so must include those as well (at least offline_access)
   // note: should auto-include all 'allowedAccessTokenScopes' from above
-  scopes:
-  ['address', 'email', 'offline_access', 'openid', 'phone', 'profile']
+  scopes: ['address', 'email', 'offline_access', 'openid', 'phone', 'profile']
     .concat(["action1", "action2"])
     .concat(["myapiaction1", "myapiaction2"]),
 
@@ -86,18 +86,33 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
   // at a time.
   interactionUrl() {
     // this => oidc koa request context;
-    console.log(JSON.stringify(this));
-    return `/interaction/${this.oidc.uuid}?client_id=${this.oidc.client.clientId}`;
+    return `/interaction/${this.oidc.uuid}`; // TODO: CONTROLLED EMBEDDING IN IFRAME ?client_id=${this.oidc.client.clientId}`;
   },
 
-  // // TODO: Test interaction check 
-  // interactionCheck() {
-  //   return {
-  //       error: 'consent_required',
-  //       error_description: 'user has not given all required consents yet',
-  //       reason: 'consent_prompt',
-  //     }
-  // },
+  // TODO: Look into select_account.
+  // prompts: ['consent', 'login', 'none', 'select_account'],
+
+  interactionCheck() {
+
+    var consentGiven = false;
+
+    var requestedScopes = this.oidc.params.scope.split(' '); // TODO: how to combine this logic with allowed scopes?
+    var consentedScopes = ConsentStore.get(this.oidc.account.accountId); // TODO: do this per client id!
+
+    if (consentedScopes) {
+      consentGiven = (requestedScopes.length === _.intersection(requestedScopes, consentedScopes).length);
+    }
+
+    if (!consentGiven) {
+      return {
+        error: 'consent_required',
+        error_description: 'user has not given all required consents yet',
+        reason: 'consent_prompt',
+      }
+    }
+
+    return false;
+  },
 
 
   adapter: DynamoAdapter,
@@ -110,11 +125,11 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
     clientCredentials: true,
     discovery: true,
     encryption: false,
-    introspection: true,
+    introspection: false,
     registration: true,
     request: false,
     requestUri: false,
-    revocation: true,
+    revocation: false,
     sessionManagement: true,
     oauthNativeApps: true,
     pkce: {
@@ -122,7 +137,15 @@ const oidc = new Provider("http://TOREPLACE", { // The issuer will be set in the
     },
     jwtat: true
   },
-});
+
+  // // TESTING
+  // cookies: {
+  //   long: { httpOnly: true, maxAge: (10 * 60) * 1000, test: true }, // 10 minutes in ms
+  //   short: { httpOnly: true, maxAge: (5 * 60) * 1000, test: true }, // 5 minutes in ms    
+  // }
+};
+
+const oidc = new Provider("http://TOREPLACE", oidcConfiguration); // The issuer will be set in the handler.
 
 const keystore = require('./keystore.json');
 const integrity = require('./integrity.json');
@@ -204,9 +227,31 @@ var expressPromise = oidc.initialize({
   });
 
   expressApp.post('/interaction/:grant/confirm', parse, (req, res) => {
-    oidc.interactionFinished(req, res, {
-      consent: {},
+
+    const sessionId = oidc.app.createContext(req).cookies.get(oidc.cookieName('session'), {
+      signed: oidcConfiguration['cookies.long.signed'],
     });
+
+    var sessionAdapter = new (oidcConfiguration.adapter)('Session');
+    return sessionAdapter.find(sessionId)
+      .then(session => {
+        const accountId = session.account;
+
+        // TODO: UI should post *which* scopes are consented by user, and they should be stored here.
+        // For now, just storing all requested scopes as consented.
+        const details = oidc.interactionDetails(req);
+        const requestedScopes = details.params.scope && details.params.scope.split(' ');
+        ConsentStore.set(accountId, requestedScopes);
+
+        oidc.interactionFinished(req, res, {
+          // TODO: If 'login' was already present in result, it should remain present...... how to do this properly??
+          login: {
+            account: accountId, // TODO: Is it ok to do this? how about acr/remember
+            loginTs: session.loginTs
+          },
+          consent: {}, // TODO: Should anything be passed back here?
+        });
+      })
   });
 
   expressApp.post('/interaction/:grant/login', parse, (req, res, next) => {
@@ -218,9 +263,9 @@ var expressPromise = oidc.initialize({
           remember: !!req.body.remember,
           ts: Math.floor(Date.now() / 1000),
         },
-        consent: {
-          // TODO: remove offline_access from scopes is remember is not checked
-        },
+        // consent: {
+        //   // TODO: remove offline_access from scopes is remember is not checked
+        // },
       });
     }).catch(next);
   });
